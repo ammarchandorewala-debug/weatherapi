@@ -51,4 +51,137 @@
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            animation: fadeInScale 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        #display {
+            width: 100%;
+            height: 80px;
+            margin-bottom: 20px;
+            padding: 20px;
+            font-size: 2.5rem;
+            text-align: right;
+            color: #ffffff;
+            background: rgba(0, 0, 0, 0.2);
+            border: none;
+            border-radius: 10px;
+            box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-areas: 
+                "clear divide multiply subtract"
+                "seven eight nine add"
+                "four five six add"
+                "one two three equals"
+                "zero zero dot equals";
+            gap: 15px;
+        }
+
+        button {
+            min-height: 65px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.2s ease;
+            opacity: 0;
+            animation: popIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+        }
+
+        button:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-clear    { grid-area: clear; background-color: #e63946; }
+        .btn-divide   { grid-area: divide; }
+        .btn-multiply { grid-area: multiply; }
+        .btn-subtract { grid-area: subtract; }
+        .btn-add      { grid-area: add; }
+        .btn-equals   { grid-area: equals; }
+        .btn-zero     { grid-area: zero; }
+        .btn-dot      { grid-area: dot; }
+
+        .btn-operator { background-color: #f77f00; }
+        .btn-operator:hover { background-color: #e85d04; }
+        
+        .btn-clear:hover { background-color: #d62828; }
+        
+        .btn-equals { background-color: #8ac926; }
+        .btn-equals:hover { background-color: #52b69a; }
+
+        .btn-7 { grid-area: seven; }
+        .btn-8 { grid-area: eight; }
+        .btn-9 { grid-area: nine; }
+        .btn-4 { grid-area: four; }
+        .btn-5 { grid-area: five; }
+        .btn-6 { grid-area: six; }
+        .btn-1 { grid-area: one; }
+        .btn-2 { grid-area: two; }
+        .btn-3 { grid-area: three; }
+
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <input type="text" id="display" readonly>
+        <div class="buttons">
+            <button class="btn-clear" style="animation-delay: 0.1s;" onclick="clearDisplay()">C</button>
+            <button class="btn-operator btn-divide" style="animation-delay: 0.15s;" onclick="appendToDisplay('/')">/</button>
+            <button class="btn-operator btn-multiply" style="animation-delay: 0.2s;" onclick="appendToDisplay('*')">x</button>
+            <button class="btn-operator btn-subtract" style="animation-delay: 0.25s;" onclick="appendToDisplay('-')">-</button>
+            
+            <button class="btn-7" style="animation-delay: 0.3s;" onclick="appendToDisplay('7')">7</button>
+            <button class="btn-8" style="animation-delay: 0.35s;" onclick="appendToDisplay('8')">8</button>
+            <button class="btn-9" style="animation-delay: 0.4s;" onclick="appendToDisplay('9')">9</button>
+            <button class="btn-operator btn-add" style="animation-delay: 0.45s;" onclick="appendToDisplay('+')">+</button>
+            
+            <button class="btn-4" style="animation-delay: 0.5s;" onclick="appendToDisplay('4')">4</button>
+            <button class="btn-5" style="animation-delay: 0.55s;" onclick="appendToDisplay('5')">5</button>
+            <button class="btn-6" style="animation-delay: 0.6s;" onclick="appendToDisplay('6')">6</button>
+            
+            <button class="btn-1" style="animation-delay: 0.65s;" onclick="appendToDisplay('1')">1</button>
+            <button class="btn-2" style="animation-delay: 0.7s;" onclick="appendToDisplay('2')">2</button>
+            <button class="btn-3" style="animation-delay: 0.75s;" onclick="appendToDisplay('3')">3</button>
+            <button class="btn-equals" style="animation-delay: 0.85s;" onclick="calculate()">=</button>
+            
+            <button class="btn-zero" style="animation-delay: 0.8s;" onclick="appendToDisplay('0')">0</button>
+            <button class="btn-dot" style="animation-delay: 0.8s;" onclick="appendToDisplay('.')">.</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        function appendToDisplay(input) {
+            display.value += input;
+        }
+
+        function clearDisplay() {
+            display.value = "";
+        }
+
+        function calculate() {
+            try {
+                display.value = eval(display.value);
+            } catch (error) {
+                display.value = "Error";
+            }
+        }
+    </script>
+</body>
+</html>
