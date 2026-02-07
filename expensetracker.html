@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title></title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root{
+  --c1: #a5c89e;
+  --c2: #fffbb1;
+  --c3: #d8e983;
+  --c4: #aeb877;
+  
+  --text-dark: #4a5d23;
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-active: rgba(255, 255, 255, 0.9);
+}
+
+*{
+  margin:0; padding:0; box-sizing:border-box;
+  font-family: 'Poppins', 'Segoe UI', sans-serif;
+}
+
+body{
+  min-height:100vh;
+  background: linear-gradient(135deg, var(--c1), var(--c3));
+  perspective: 1500px; 
+  overflow: hidden;
+  color: var(--text-dark);
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: -10%; right: -10%;
+  width: 50vw; height: 50vw;
+  background: var(--c2);
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+  z-index: -1;
+}
+
+header{
+  position: absolute; top: 0; width: 100%;
+  text-align:center; padding: 20px;
+  font-size:2rem; font-weight:900;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: white;
+  text-shadow: 2px 2px 0px var(--c4);
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(5px);
+  z-index: 10;
+}
+
+.hud-top {
+  position: absolute; top: 90px; width: 100%;
+  display: flex; justify-content: center; gap: 40px;
+  z-index: 5;
+}
+
+.stat-box {
+  background: var(--glass);
+  padding: 10px 25px;
+  border-radius: 20px;
+  border: 2px solid var(--c2);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.stat-box h3 { font-size: 0.9rem; color: var(--c4); text-transform: uppercase; font-weight:bold;}
+.stat-box span { font-size: 1.6rem; font-weight: bold; color: #333; }
+
+.scene-container {
+  position: absolute;
+  top: 180px; left: 5%;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  transform-style: preserve-3d;
+  transform: rotateY(10deg);
+}
+
+.row-top {
+  display: flex; gap: 25px; justify-content: center;
+}
+.row-bottom {
+  display: flex; justify-content: center;
+}
+
+.card{
+  width: 240px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.8), rgba(255,255,255,0.5));
+  backdrop-filter: blur(10px);
+  border: 2px solid white;
+  border-radius: 25px;
+  padding: 15px;
+  text-align: center;
+  transition: 0.4s;
+  position: relative;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.card.active{
+  transform: scale(1.05) translateZ(40px);
+  border-color: var(--c3);
+  background: white;
+  box-shadow: 0 0 30px var(--c2);
+}
+
+.card h2 { 
+    font-size: 1.4rem; 
+    margin-bottom: 10px; 
+    color: var(--c4); 
+    font-weight: 800;
+}
+
+.card input {
+  width: 100%; padding: 10px; margin: 5px 0;
+  background: rgba(255,255,255,0.9); 
+  border: 2px solid var(--c2);
+  color: var(--text-dark); 
+  border-radius: 12px;
+  outline: none;
+}
+.card button {
+  width: 100%; padding: 10px; margin-top: 5px;
+  background: var(--c4);
+  border: none; color: white; font-weight: bold;
+  border-radius: 12px; cursor: pointer;
+  transition: 0.3s;
+}
+.card button:hover {
+    background: var(--c1);
+    transform: scale(1.05);
+}
+
+.progress-container {
+  width: 100%; background: #e0e0e0; height: 12px;
+  border-radius: 6px; margin-top: 5px; overflow: hidden;
+  border: 1px solid white;
+}
+.progress-bar {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--c3), var(--c1));
+  transition: width 0.5s;
+}
+
+.chart-panel {
+  position: absolute;
+  right: 5%; top: 180px;
+  width: 40%; height: 420px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 3px solid white;
+  border-radius: 30px;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  display: flex; flex-direction: column; align-items: center;
+  transform: rotateY(-5deg);
+}
+
+#chartBackBtn {
+  display: none;
+  margin-bottom: 10px;
+  padding: 5px 15px;
+  background: var(--c4); color: white;
+  border: none; border-radius: 20px;
+  cursor: pointer; font-weight: bold;
+}
+
+#shinchan{
+  position:absolute; width:90px; left:40px; top:350px;
+  transition: left 0.1s linear, top 0.1s linear;
+  z-index: 100;
+  pointer-events: none;
+  filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+}
+.head{
+  width:65px; height:55px; background:#ffd1a4;
+  border-radius:60% 60% 50% 50%; margin:auto;
+  border: 2px solid #000; position: relative;
+}
+.head::before, .head::after {
+  content:""; position:absolute; width:18px; height:7px;
+  background:#000; top:14px; border-radius:5px;
+}
+.head::before{left:8px; transform:rotate(-15deg);}
+.head::after{right:8px; transform:rotate(15deg);}
+.body{
+  width:55px; height:45px; background:#ff5e5e;
+  margin:-5px auto 0; border-radius:15px; border: 2px solid #000;
+}
+.legs{
+  width: 45px; margin: auto; display: flex; justify-content: space-between;
+}
+.leg { width: 14px; height: 18px; background: #fffbb1; border: 2px solid #000; border-radius: 0 0 5px 5px;}
+
+</style>
+</head>
+<body>
+
+<header> Expense tracker</header>
+
+<div class="hud-top">
+  <div class="stat-box">
+    <h3>Balance</h3>
+    ₹<span id="balance">10000</span>
+  </div>
+  <div class="stat-box">
+    <h3>Spent</h3>
+    ₹<span id="totalSpent">0</span>
+  </div>
+</div>
+
+<div class="scene-container">
+  <div class="row-top">
+    <div class="card" id="daily">
+      <h2>🏠 Home</h2>
+      <input type="text" id="desc-daily" placeholder="Item (e.g. Milk)">
+      <input type="number" id="amt-daily" placeholder="Amount">
+      <button onclick="addExpense('daily')">ADD</button>
+    </div>
+
+    <div class="card" id="entertain">
+      <h2>🎮 Fun</h2>
+      <input type="text" id="desc-entertain" placeholder="Item (e.g. Movie)">
+      <input type="number" id="amt-entertain" placeholder="Amount">
+      <button onclick="addExpense('entertain')">ADD</button>
+    </div>
+  </div>
+
+  <div class="row-bottom">
+    <div class="card" id="saving">
+      <h2>💰 Saving</h2>
+      <div style="font-size:0.8rem; color:var(--c4); margin-bottom:5px;">Goal: ₹<span id="goalText">0</span></div>
+      <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+      
+      <input type="number" id="goalInput" placeholder="Set Goal" onchange="setGoal(this.value)">
+      <input type="number" id="amt-saving" placeholder="Deposit Amt">
+      <button onclick="addExpense('saving')">DEPOSIT</button>
+    </div>
+  </div>
+</div>
+
+<div class="chart-panel">
+  <button id="chartBackBtn" onclick="resetChart()">⬅ Back</button>
+  <div style="width: 100%; height: 100%;">
+    <canvas id="myChart"></canvas>
+  </div>
+</div>
+
+<div id="shinchan">
+  <div class="head"></div>
+  <div class="body"></div>
+  <div class="legs"><div class="leg"></div><div class="leg"></div></div>
+</div>
+
+<script>
+(function() {
+
+  let balance = 10000;
+  let totalSpent = 0;
+  let savingsGoal = 0;
+
+  let expenseData = {
+    daily: [],
+    entertain: [],
+    saving: []
+  };
+
+  const shin = document.getElementById("shinchan");
+  const cards = document.querySelectorAll(".card");
+  let activeCardId = null;
+
+  let x = 50;
+  let y = 350;
+  const speed = 25;
+
+  if (window.shinchanKeyHandler) {
+    document.removeEventListener("keydown", window.shinchanKeyHandler);
+  }
+
+  const handleKeyDown = (e) => {
+    if(e.key === "ArrowRight") x += speed;
+    if(e.key === "ArrowLeft")  x -= speed;
+    if(e.key === "ArrowUp")    y -= speed;
+    if(e.key === "ArrowDown")  y += speed;
+
+    x = Math.max(0, Math.min(window.innerWidth - 100, x));
+    y = Math.max(100, Math.min(window.innerHeight - 100, y));
+
+    shin.style.left = x + "px";
+    shin.style.top  = y + "px";
+
+    detectCollision();
+  };
+
+  window.shinchanKeyHandler = handleKeyDown;
+  document.addEventListener("keydown", handleKeyDown);
+
+  function detectCollision(){
+    activeCardId = null;
+    cards.forEach(card=>{
+      card.classList.remove("active");
+      const rect = card.getBoundingClientRect();
+      const shinRect = shin.getBoundingClientRect();
+
+      if(
+        shinRect.right > rect.left && 
+        shinRect.left < rect.right && 
+        shinRect.bottom > rect.top && 
+        shinRect.top < rect.bottom
+      ){
+        activeCardId = card.id;
+        card.classList.add("active");
+      }
+    });
+  }
+
+  window.setGoal = function(val){
+    savingsGoal = Number(val);
+    document.getElementById('goalText').innerText = savingsGoal;
+    updateProgressBar();
+  }
+
+  function updateProgressBar(){
+    if(savingsGoal <= 0) return;
+    const currentSavings = expenseData.saving.reduce((sum, item) => sum + item.amount, 0);
+    const pct = Math.min(100, (currentSavings / savingsGoal) * 100);
+    document.getElementById('progressBar').style.width = pct + "%";
+  }
+
+  window.addExpense = function(type){
+    if(type !== activeCardId){
+      alert("🚶 Move Shinchan to this card first!");
+      return;
+    }
+
+    const amtInput = type === 'saving' ? document.getElementById('amt-saving') : document.getElementById(`amt-${type}`);
+    const descInput = type === 'saving' ? null : document.getElementById(`desc-${type}`);
+
+    const amount = Number(amtInput.value);
+    const desc = descInput ? descInput.value : "Deposit";
+
+    if(amount <= 0 || amount > balance){
+      alert("❌ Invalid Amount or Insufficient Balance");
+      return;
+    }
+    if(type !== 'saving' && desc.trim() === ""){
+      alert("❌ Please name the expense");
+      return;
+    }
+
+    expenseData[type].push({ name: desc, amount: amount });
+    
+    balance -= amount;
+    totalSpent += amount;
+
+    document.getElementById('balance').innerText = balance;
+    document.getElementById('totalSpent').innerText = totalSpent;
+    
+    amtInput.value = "";
+    if(descInput) descInput.value = "";
+
+    if(type === 'saving') updateProgressBar();
+
+    updateMainChart();
+  }
+
+  const ctx = document.getElementById('myChart').getContext('2d');
+  let myPieChart;
+  let isDrilledDown = false;
+
+  const themeColors = {
+    home: '#a5c89e',
+    fun: '#fffbb1',
+    saving: '#aeb877',
+    highlight: '#d8e983'
+  };
+
+  function initChart(){
+    if (window.currentChart) {
+      window.currentChart.destroy();
+    }
+
+    myPieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Home', 'Fun', 'Saving'],
+        datasets: [{
+          data: [0, 0, 0],
+          backgroundColor: [themeColors.home, themeColors.fun, themeColors.saving],
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverOffset: 10
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#4a5d23', font: { size: 14, weight: 'bold' } } },
+          tooltip: {
+              backgroundColor: 'rgba(255,255,255,0.9)',
+              titleColor: '#000',
+              bodyColor: '#000',
+              borderColor: '#aeb877',
+              borderWidth: 1
+          }
+        },
+        onClick: (evt, activeElements) => {
+          if (activeElements.length > 0 && !isDrilledDown) {
+            const index = activeElements[0].index;
+            drillDown(index);
+          }
+        }
+      }
+    });
+
+    window.currentChart = myPieChart;
+  }
+
+  function updateMainChart(){
+    if(isDrilledDown) return;
+
+    const totalHome = expenseData.daily.reduce((acc, i) => acc + i.amount, 0);
+    const totalFun = expenseData.entertain.reduce((acc, i) => acc + i.amount, 0);
+    const totalSave = expenseData.saving.reduce((acc, i) => acc + i.amount, 0);
+
+    myPieChart.data.labels = ['Home', 'Fun', 'Saving'];
+    myPieChart.data.datasets[0].data = [totalHome, totalFun, totalSave];
+    myPieChart.data.datasets[0].backgroundColor = [themeColors.home, themeColors.fun, themeColors.saving];
+    myPieChart.update();
+  }
+
+  function drillDown(index){
+    let category = '';
+    let items = [];
+    let baseColor = '';
+
+    if(index === 0) { category = 'daily'; baseColor = themeColors.home; }
+    else if(index === 1) { category = 'entertain'; baseColor = themeColors.fun; }
+    else { category = 'saving'; baseColor = themeColors.saving; }
+
+    items = expenseData[category];
+
+    if(items.length === 0){
+      alert("No items in this category yet!");
+      return;
+    }
+
+    const labels = items.map(i => i.name);
+    const data = items.map(i => i.amount);
+    
+    const colors = items.map((_, i) => {
+        return i % 2 === 0 ? baseColor : themeColors.highlight; 
+    });
+
+    myPieChart.data.labels = labels;
+    myPieChart.data.datasets[0].data = data;
+    myPieChart.data.datasets[0].backgroundColor = colors;
+    myPieChart.update();
+
+    isDrilledDown = true;
+    document.getElementById('chartBackBtn').style.display = 'block';
+  }
+
+  window.resetChart = function(){
+    isDrilledDown = false;
+    document.getElementById('chartBackBtn').style.display = 'none';
+    updateMainChart();
+  }
+
+  initChart();
+
+})();
+</script>
+</body>
+</html>
